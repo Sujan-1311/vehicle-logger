@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PitStop - Vehicle Service & Fuel Mileage Logger</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2306b6d4'><path d='M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z'/></svg>">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+            <circle cx="7" cy="17" r="2"></circle>
+            <path d="M9 17h6"></path>
+            <circle cx="17" cy="17" r="2"></circle>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">PitStop Logger</div>
+          <div class="brand-subtitle">Vehicle Service & Fuel Mileage Tracker</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Vehicle Switcher -->
+        <div class="vehicle-selector-wrapper">
+          <span style="font-size: 0.9rem;">🚘</span>
+          <select id="globalVehicleSelect" class="vehicle-select" title="Active Vehicle">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <button class="btn btn-primary btn-sm" onclick="openFuelModal()">
+          <span>⛽</span> Log Fuel
+        </button>
+
+        <button class="btn btn-accent btn-sm" onclick="openServiceModal()">
+          <span>🔧</span> Log Service
+        </button>
+
+        <button class="btn btn-secondary btn-icon" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+          ☀️
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <div class="nav-container">
+      <button class="tab-btn active" data-tab="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        Dashboard
+      </button>
+      <button class="tab-btn" data-tab="fuel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
+        Fuel Mileage
+      </button>
+      <button class="tab-btn" data-tab="service">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Maintenance & Service
+      </button>
+      <button class="tab-btn" data-tab="reminders">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        Reminders & Schedule
+      </button>
+      <button class="tab-btn" data-tab="garage">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Garage & Settings
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Body -->
+  <main class="main-content">
+
+    <!-- VEHICLE BANNER -->
+    <div class="vehicle-banner" id="vehicleBannerContent">
+      <!-- Populated dynamically -->
+    </div>
+
+    <!-- Alert / Due Notice Banner -->
+    <div id="dashboardAlertBanner" style="margin-bottom: 1.5rem; display: none;"></div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div class="tab-pane active" id="tab-dashboard">
+      <!-- Top Metrics Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Average Fuel Economy</span>
+            <div class="stat-icon" style="color: var(--accent-cyan);">⚡</div>
+          </div>
+          <div class="stat-value" id="statMileage">—</div>
+          <div class="stat-sub">
+            <span>Last fill:</span> <strong id="statLastMileage">—</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Total Expenses</span>
+            <div class="stat-icon" style="color: var(--accent-emerald);">💰</div>
+          </div>
+          <div class="stat-value" id="statTotalCost">—</div>
+          <div class="stat-sub" id="statCostSplit">
+            Fuel + Service Records
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Running Cost</span>
+            <div class="stat-icon" style="color: var(--accent-amber);">📈</div>
+          </div>
+          <div class="stat-value" id="statRunningCost">—</div>
+          <div class="stat-sub">
+            Combined Cost per Distance
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Distance Logged</span>
+            <div class="stat-icon" style="color: var(--accent-purple);">🛣️</div>
+          </div>
+          <div class="stat-value" id="statTotalDistance">—</div>
+          <div class="stat-sub" id="statCurrentOdo">
+            Current Odometer
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts & Visuals Grid -->
+      <div class="charts-grid">
+        <!-- Fuel Mileage Trend Line Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span style="color: var(--accent-cyan);">📈</span> Fuel Mileage Trend
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Historical efficiency over fill-ups</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" id="fuelChartContainer">
+              <!-- SVG chart rendered via JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Expenses Breakdown Bar Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span style="color: var(--accent-emerald);">📊</span> Monthly Expenses
+            </div>
+            <div style="display: flex; gap: 0.5rem; font-size: 0.75rem;">
+              <span style="color: var(--accent-blue);">■ Fuel</span>
+              <span style="color: var(--accent-emerald);">■ Service</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" id="expenseChartContainer">
+              <!-- SVG bar chart rendered via JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activities -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🕒</span> Recent Fuel & Service History
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('fuel')">View All Fuel Logs</button>
+        </div>
+        <div class="card-body" id="recentActivityFeed">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: FUEL LOGS -->
+    <div class="tab-pane" id="tab-fuel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>⛽</span> Fuel Fill-up Logbook
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="exportFuelLogsCSV()">
+              📥 Export CSV
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="openFuelModal()">
+              + Add Fuel Log
+            </button>
+          </div>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Odometer</th>
+                  <th>Trip Distance</th>
+                  <th>Volume</th>
+                  <th>Price/Unit</th>
+                  <th>Total Cost</th>
+                  <th>Efficiency</th>
+                  <th>Type</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="fuelLogsTableBody">
+                <!-- Dynamic Fuel Logs -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SERVICE & MAINTENANCE -->
+    <div class="tab-pane" id="tab-service">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🔧</span> Vehicle Service & Maintenance History
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="window.print()">
+              🖨️ Print Service Book
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="exportServiceLogsCSV()">
+              📥 Export CSV
+            </button>
+            <button class="btn btn-accent btn-sm" onclick="openServiceModal()">
+              + Add Service Record
+            </button>
+          </div>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Odometer</th>
+                  <th>Category</th>
+                  <th>Service Details & Shop</th>
+                  <th>Invoice #</th>
+                  <th>Cost</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="serviceLogsTableBody">
+                <!-- Dynamic Service Logs -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: REMINDERS -->
+    <div class="tab-pane" id="tab-reminders">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 700;">Scheduled Maintenance & Reminders</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Stay ahead of oil changes, tire rotations, inspections, and renewal dates.</p>
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="openReminderModal()">
+          + Add Reminder
+        </button>
+      </div>
+
+      <div class="reminders-grid" id="remindersListContainer">
+        <!-- Dynamic Reminders List -->
+      </div>
+    </div>
+
+    <!-- TAB 5: GARAGE & SETTINGS -->
+    <div class="tab-pane" id="tab-garage">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 700;">Vehicle Garage</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Manage multiple vehicles, cars, bikes, and preferences.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openVehicleModal()">
+          + Add New Vehicle
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;" id="garageVehiclesList">
+        <!-- Vehicle Cards -->
+      </div>
+
+      <!-- Backup & Data Management Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>💾</span> Data Backup, Export & Portability
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            All your logs are safely stored locally in your browser's offline storage. You can export a full JSON backup to transfer to other devices, or export CSV files for spreadsheets.
+          </p>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            <button class="btn btn-secondary btn-sm" onclick="exportDataJSON()">
+              📦 Export Full Backup (JSON)
+            </button>
+
+            <label class="btn btn-secondary btn-sm" style="margin-bottom: 0;">
+              📂 Import Backup (JSON)
+              <input type="file" id="jsonImportInput" accept=".json" style="display: none;">
+            </label>
+
+            <button class="btn btn-secondary btn-sm" onclick="exportFuelLogsCSV()">
+              📊 Fuel Logs CSV
+            </button>
+
+            <button class="btn btn-secondary btn-sm" onclick="exportServiceLogsCSV()">
+              📑 Service Logs CSV
+            </button>
+
+            <button class="btn btn-danger btn-sm" onclick="clearAllData()">
+              ⚠️ Reset / Restore Demo Data
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD / EDIT FUEL LOG -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay" id="fuelModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="fuelModalTitle">Add Fuel Log</div>
+        <button class="modal-close" type="button">&times;</button>
+      </div>
+      <form id="fuelLogForm">
+        <input type="hidden" id="fuelLogId">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" id="fuelDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time</label>
+              <input type="time" id="fuelTime" class="form-input">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" id="fuelOdoLabel">Odometer</label>
+              <input type="number" step="any" id="fuelOdometer" class="form-input" placeholder="e.g. 15420" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="fuelQtyLabel">Fuel Volume</label>
+              <input type="number" step="0.01" id="fuelQuantity" class="form-input" placeholder="e.g. 42.5" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="fuelPriceLabel">Unit Price</label>
+              <input type="number" step="0.001" id="fuelUnitPrice" class="form-input" placeholder="e.g. 1.65">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" id="fuelCostLabel">Total Cost</label>
+              <input type="number" step="0.01" id="fuelTotalCost" class="form-input" placeholder="e.g. 70.13" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Gas Station / Brand</label>
+              <input type="text" id="fuelStation" class="form-input" placeholder="e.g. Shell V-Power, Chevron">
+            </div>
+
+            <div class="form-group col-span-2">
+              <div class="checkbox-group">
+                <input type="checkbox" id="fuelIsFull" checked>
+                <label for="fuelIsFull" style="font-size: 0.85rem; font-weight: 600;">
+                  Full Tank Fill-up (recommended for accurate mileage calculation)
+                </label>
+              </div>
+              <div class="checkbox-group" style="margin-top: 0.35rem;">
+                <input type="checkbox" id="fuelIsMissed">
+                <label for="fuelIsMissed" style="font-size: 0.825rem; color: var(--text-muted);">
+                  Missed previous fill-up (resets mileage calculation baseline)
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Notes</label>
+              <textarea id="fuelNotes" class="form-textarea" placeholder="Highway cruise, tire pressure, AC on..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Fuel Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD / EDIT SERVICE LOG -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay" id="serviceModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="serviceModalTitle">Add Service Record</div>
+        <button class="modal-close" type="button">&times;</button>
+      </div>
+      <form id="serviceLogForm">
+        <input type="hidden" id="serviceLogId">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Service Date</label>
+              <input type="date" id="serviceDate" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="serviceOdoLabel">Odometer</label>
+              <input type="number" step="any" id="serviceOdometer" class="form-input" placeholder="e.g. 15000" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Service Category</label>
+              <select id="serviceCategory" class="form-select" required>
+                <option value="oil_filter">Oil & Filter</option>
+                <option value="brakes">Brakes & Rotors</option>
+                <option value="tires">Tires & Alignment</option>
+                <option value="battery">Battery & Electrical</option>
+                <option value="air_cabin_filter">Air & Cabin Filter</option>
+                <option value="transmission">Transmission Fluid</option>
+                <option value="spark_plugs">Spark Plugs</option>
+                <option value="coolant">Coolant Flush</option>
+                <option value="suspension">Suspension & Steering</option>
+                <option value="inspection">General Inspection / MOT / PUC</option>
+                <option value="wash_detailing">Wash & Detailing</option>
+                <option value="insurance_tax">Insurance / Registration</option>
+                <option value="repair">Repairs & Diagnostics</option>
+                <option value="other">Other Service</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Service Title / Description</label>
+              <input type="text" id="serviceTitle" class="form-input" placeholder="e.g. Full Synthetic Oil Change & Filter" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Service Center / Mechanic / DIY</label>
+              <input type="text" id="serviceCenter" class="form-input" placeholder="e.g. Dealership, Local Garage, DIY">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Parts Cost</label>
+              <input type="number" step="0.01" id="serviceCostParts" class="form-input" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Labor Cost</label>
+              <input type="number" step="0.01" id="serviceCostLabor" class="form-input" placeholder="0.00">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" id="serviceTotalCostLabel">Total Service Cost</label>
+              <input type="number" step="0.01" id="serviceTotalCost" class="form-input" placeholder="0.00" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Invoice / Receipt #</label>
+              <input type="text" id="serviceReceipt" class="form-input" placeholder="e.g. INV-2026-881">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Notes & Specifications</label>
+              <textarea id="serviceNotes" class="form-textarea" placeholder="Part numbers, oil viscosity (e.g. 0W-20), warranty details..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-accent">Save Service Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD / EDIT REMINDER -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay" id="reminderModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="reminderModalTitle">Add Reminder</div>
+        <button class="modal-close" type="button">&times;</button>
+      </div>
+      <form id="reminderForm">
+        <input type="hidden" id="reminderId">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label class="form-label">Reminder Title</label>
+              <input type="text" id="reminderTitle" class="form-input" placeholder="e.g. Engine Oil & Filter Change" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Service Category</label>
+              <select id="reminderCategory" class="form-select" required>
+                <option value="oil_filter">Oil & Filter</option>
+                <option value="brakes">Brakes & Rotors</option>
+                <option value="tires">Tires & Alignment</option>
+                <option value="battery">Battery & Electrical</option>
+                <option value="air_cabin_filter">Air & Cabin Filter</option>
+                <option value="transmission">Transmission Fluid</option>
+                <option value="spark_plugs">Spark Plugs</option>
+                <option value="coolant">Coolant Flush</option>
+                <option value="inspection">General Inspection / Emission</option>
+                <option value="insurance_tax">Insurance / Registration</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="reminderDueOdoLabel">Due at Odometer</label>
+              <input type="number" step="any" id="reminderDueOdo" class="form-input" placeholder="e.g. 20000">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Due Date</label>
+              <input type="date" id="reminderDueDate" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="reminderRecKmLabel">Repeat every (Distance)</label>
+              <input type="number" step="any" id="reminderRecKm" class="form-input" placeholder="e.g. 10000">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Repeat every (Months)</label>
+              <input type="number" id="reminderRecMonths" class="form-input" placeholder="e.g. 6">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Reminder Notes</label>
+              <textarea id="reminderNotes" class="form-textarea" placeholder="Oil grade, torque specs, warranty notes..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-accent">Save Reminder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD / EDIT VEHICLE -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay" id="vehicleModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="vehicleModalTitle">Add Vehicle</div>
+        <button class="modal-close" type="button">&times;</button>
+      </div>
+      <form id="vehicleForm">
+        <input type="hidden" id="vehicleId">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label class="form-label">Vehicle Nickname / Display Name</label>
+              <input type="text" id="vehicleName" class="form-input" placeholder="e.g. My Daily RAV4, Weekend Harley" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Vehicle Type</label>
+              <select id="vehicleType" class="form-select">
+                <option value="car">Car (Sedan/Hatchback/Coupe)</option>
+                <option value="suv">SUV / Crossover</option>
+                <option value="motorcycle">Motorcycle / Scooter</option>
+                <option value="truck">Truck / Pickup</option>
+                <option value="van">Van / Minivan</option>
+                <option value="electric">Electric Vehicle</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Fuel Type</label>
+              <select id="vehicleFuelType" class="form-select">
+                <option value="petrol">Petrol / Gasoline</option>
+                <option value="diesel">Diesel</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="cng">CNG / LPG</option>
+                <option value="electric">Electric (EV)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Make</label>
+              <input type="text" id="vehicleMake" class="form-input" placeholder="e.g. Toyota, Honda, Ford">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Model</label>
+              <input type="text" id="vehicleModel" class="form-input" placeholder="e.g. RAV4, Civic, F-150">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Model Year</label>
+              <input type="number" id="vehicleYear" class="form-input" placeholder="e.g. 2024">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">License Plate / Reg #</label>
+              <input type="text" id="vehiclePlate" class="form-input" placeholder="e.g. ABC-1234">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">VIN (Vehicle Identification Number)</label>
+              <input type="text" id="vehicleVin" class="form-input" placeholder="Optional 17-character VIN">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Initial Odometer</label>
+              <input type="number" step="any" id="vehicleInitialOdo" class="form-input" placeholder="e.g. 10000">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tank Capacity (Volume)</label>
+              <input type="number" step="any" id="vehicleCapacity" class="form-input" placeholder="e.g. 55">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Distance Unit</label>
+              <select id="vehicleDistUnit" class="form-select">
+                <option value="km">Kilometers (km)</option>
+                <option value="mi">Miles (mi)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Fuel Volume Unit</label>
+              <select id="vehicleFuelUnit" class="form-select">
+                <option value="L">Litres (L)</option>
+                <option value="gal">Gallons (gal)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Efficiency Unit</label>
+              <select id="vehicleEffUnit" class="form-select">
+                <option value="km/L">km/L (Kilometers per Liter)</option>
+                <option value="L/100km">L/100km (Liters per 100 km)</option>
+                <option value="MPG (US)">MPG US (Miles per Gallon)</option>
+                <option value="MPG (UK)">MPG UK (Miles per Imperial Gallon)</option>
+                <option value="km/kWh">km/kWh (Electric Efficiency)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Currency Symbol</label>
+              <input type="text" id="vehicleCurrency" class="form-input" placeholder="e.g. $, ₹, €, £">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Notes</label>
+              <textarea id="vehicleNotes" class="form-textarea" placeholder="Trim level, tire sizes, engine code..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
